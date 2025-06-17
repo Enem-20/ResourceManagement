@@ -1,0 +1,33 @@
+BasedOnStyle: Google
+Language: Cpp
+Standard: Cpp23
+
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+
+ColumnLimit: 120
+BreakBeforeBraces: Allman
+AllowShortFunctionsOnASingleLine: Inline
+
+NamespaceIndentation: All
+IndentCaseLabels: true
+IndentGotoLabels: false
+IndentPPDirectives: AfterHash
+
+SortIncludes: true
+IncludeBlocks: Preserve
+
+SpacesBeforeTrailingComments: 1
+SpaceBeforeParens: ControlStatements
+PointerAlignment: Left
+
+ConstructorInitializerIndentWidth: 4
+AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: true
+AlignTrailingComments: true
+ReflowComments: true
+
+Cpp11BracedListStyle: true
+AlwaysBreakTemplateDeclarations: Yes
+AllowShortIfStatementsOnASingleLine: false
