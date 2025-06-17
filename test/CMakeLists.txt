@@ -1,0 +1,6 @@
+project(ResourceManagementTest)
+
+add_executable(ResourceManagementTest)
+target_sources(ResourceManagementTest PRIVATE main.cpp)
+
+target_link_libraries(ResourceManagementTest PRIVATE ResourceManagement)

@@ -1,0 +1,6 @@
+[submodule "external/glaze"]
+	path = external/glaze
+	url = https://github.com/stephenberry/glaze.git
+[submodule "external/hopscotch-map"]
+	path = external/hopscotch-map
+	url = https://github.com/Tessil/hopscotch-map.git
