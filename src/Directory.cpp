@@ -7,17 +7,17 @@ Directory::Directory(const std::string& path)
     
 }
 
-Directory* Directory::getParent() const {
+auto Directory::getParent() const -> Directory* {
     return _parent;
 }
 
-Directory* Directory::getChild(size_t childIndex) const {
+auto Directory::getChild(size_t childIndex) const -> Directory* {
     if(childIndex < _children.size()) {
         return _children[childIndex];
     }
     return nullptr;
 }
 
-std::vector<Directory*>& Directory::getChildren() {
+auto Directory::getChildren() -> std::vector<Directory*>& {
     return _children;
 }

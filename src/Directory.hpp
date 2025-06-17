@@ -6,13 +6,14 @@
 #include <filesystem>
 #include <vector>
 
+#include "ResourceManagementEXPORT.hpp"
 
-class Directory {
+class RESOURCE_MANAGEMENT_EXPORT Directory {
 public:
     Directory(const std::string& path);
-    Directory* getParent() const;
-    Directory* getChild(size_t childIndex) const;
-    std::vector<Directory*>& getChildren();
+    [[nodiscard]] auto getParent() const -> Directory*;
+    [[nodiscard]] auto getChild(size_t childIndex) const -> Directory*;
+    auto getChildren() -> std::vector<Directory*>&;
 private:
     Directory* _parent;
     std::vector<Directory*> _children;

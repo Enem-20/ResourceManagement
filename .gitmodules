@@ -4,3 +4,6 @@
 [submodule "external/hopscotch-map"]
 	path = external/hopscotch-map
 	url = https://github.com/Tessil/hopscotch-map.git
+[submodule "external/Pimpl"]
+	path = external/Pimpl
+	url = https://github.com/Enem-20/Pimpl.git

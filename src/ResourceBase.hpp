@@ -9,6 +9,8 @@
 
 #include <glaze/glaze.hpp>
 
+#include <ResourceManagementEXPORT.hpp>
+
 #include "ResourceManager.hpp"
 
 // === 1. FNV‑1a 64‑bit for std::string_view ===
@@ -54,48 +56,47 @@ struct TypeName {
     static constexpr std::string_view name = type_name_impl<T>();
 };
 
-template <typename T>
-constexpr std::string_view TypeName<T>::name;
+
 
 template<class Derived>
 class ResourceBase {
 public:
     static constexpr std::string_view type = TypeName<Derived>::name;
-    static constexpr std::uint64_t type_hash = fnv1a(type);
+    static constexpr std::uint64_t typeHash = fnv1a(type);
 
-    static Derived* deserialize(std::string_view json);
-	static std::string serialize(Derived* obj);
+    static auto deserialize(std::string_view json) -> Derived*;
+	static auto serialize(Derived* obj) -> std::string;
 
     ResourceBase();
 
     virtual void initialize(std::string_view name);
-    virtual std::string _serialize();
-    virtual Derived* _deserialize(std::string_view json);
+    virtual auto _serialize() -> std::string;
+    virtual auto _deserialize(std::string_view json) -> Derived*;
 
     std::string_view getName() const;
     uint64_t getNameHash() const;
     
 private:
     std::string _name;
-    uint64_t _nameHash;
+    uint64_t _nameHash{};
     
 };
 
 template<class Derived>
-Derived* ResourceBase<Derived>::deserialize(std::string_view json) {
-    Derived* obj = new Derived();
+auto ResourceBase<Derived>::deserialize(std::string_view json) -> Derived* {
+    auto obj = new Derived();
     obj->_deserialize(json);
     return obj;
 }
 
 template<class Derived>
-std::string ResourceBase<Derived>::serialize(Derived* obj) {
+auto ResourceBase<Derived>::serialize(Derived* obj) -> std::string {
     return obj->_serialize();
 }
 
 template<class Derived>
 ResourceBase<Derived>::ResourceBase() {
-    Derived* derived = dynamic_cast<Derived*>(this);
+    auto derived = dynamic_cast<Derived*>(this);
     
     ResourceManager::getInstance()->addResource<Derived>(derived);
 }
@@ -107,24 +108,24 @@ void ResourceBase<Derived>::initialize(std::string_view name) {
 }
 
 template<class Derived>
-std::string ResourceBase<Derived>::_serialize() {
+auto ResourceBase<Derived>::_serialize() -> std::string {
     return glz::write_json(*dynamic_cast<Derived*>(this)).value_or("error");
 }
 
 template<class Derived>
-Derived* ResourceBase<Derived>::_deserialize(std::string_view json) {
-    Derived* obj = new Derived();
+auto ResourceBase<Derived>::_deserialize(std::string_view json) -> Derived* {
+    auto obj = new Derived();
     obj->_deserialize(json);
     return obj;
 }
 
 template <class Derived>
-std::string_view ResourceBase<Derived>::getName() const {
+auto ResourceBase<Derived>::getName() const -> std::string_view {
     return _name;
 }
 
 template<class Derived>
-uint64_t ResourceBase<Derived>::getNameHash() const {
+auto ResourceBase<Derived>::getNameHash() const -> uint64_t {
     return _nameHash;
 }
 

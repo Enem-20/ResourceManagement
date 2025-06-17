@@ -1,9 +1,9 @@
 #include "iostream"
 
-#include <TestResourceObject.hpp>
+#include "TestResourceObject.hpp"
 
 int main(int argc, const char** argv) {
-	TestResourceObject* testObject = new TestResourceObject();
+	auto* testObject = new TestResourceObject();
 	testObject->initialize("testObject");
 	testObject->setId(15);
 	testObject->setStr("check");

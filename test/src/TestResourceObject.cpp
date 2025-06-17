@@ -1,11 +1,9 @@
 #include "TestResourceObject.hpp"
 
 #include <cstddef>
-#include <memory>
 
 #include <glaze/json/write.hpp>
 
-#include "Pimpl.hpp"
 #include "ResourceBase.hpp"
 
 
@@ -17,8 +15,8 @@ public:
 
     void setId(size_t id);
     void setStr(std::string_view newStr);
-    size_t getId() const;
-    const std::string& getStr() const;
+    [[nodiscard]] auto getId() const -> size_t;
+    [[nodiscard]] auto getStr() const -> const std::string&;
 private:
     size_t id;
     std::string str;
@@ -33,11 +31,11 @@ void _Impl::setStr(std::string_view newStr) {
     str = newStr;
 }
 
-size_t _Impl::getId() const {
+auto _Impl::getId() const -> size_t {
     return id;
 }
 
-const std::string& _Impl::getStr() const {
+auto _Impl::getStr() const -> const std::string& {
     return str;
 }
 
@@ -55,13 +53,13 @@ TestResourceObject::TestResourceObject()
 
 }
 
-TestResourceObject* TestResourceObject::deserialize(std::string_view json) {
-    TestResourceObject* obj = new TestResourceObject;
+auto TestResourceObject::deserialize(std::string_view json) -> TestResourceObject* {
+    auto* obj = new TestResourceObject;
     obj->_deserialize(json);
     return obj;
 }
 
-std::string TestResourceObject::serialize(TestResourceObject* obj) {
+auto TestResourceObject::serialize(TestResourceObject* obj) -> std::string {
     return obj->_serialize();
 }
 
@@ -69,7 +67,7 @@ void TestResourceObject::initialize(std::string_view name) {
     _impl->initialize(name);
 }
 
-std::string TestResourceObject::_serialize() {
+auto TestResourceObject::_serialize() -> std::string {
     return _impl->_serialize();
 }
 
@@ -85,10 +83,10 @@ void TestResourceObject::setStr(std::string_view newStr) {
     _impl->setStr(newStr);
 }
 
-size_t TestResourceObject::getId() const {
+auto TestResourceObject::getId() const -> size_t {
     return _impl->getId();
 }
 
-const std::string& TestResourceObject::getStr() const {
+auto TestResourceObject::getStr() const -> const std::string& {
     return _impl->getStr();
 }

@@ -3,56 +3,62 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <fstream>
+
 #include <glaze/core/opts.hpp>
 #include <glaze/json/json_t.hpp>
 #include <string>
-#include <sstream>
+
 
 #include <tsl/hopscotch_map.h>
 
 #include "Resource.hpp"
 
-class ResourceManager {
+class RESOURCE_MANAGEMENT_EXPORT ResourceManager {
 public:
+	ResourceManager(const ResourceManager&) = delete;
+	auto operator=(const ResourceManager&) -> ResourceManager& = delete;
+	ResourceManager(ResourceManager&&) = delete;
+	auto operator=(ResourceManager&&) -> ResourceManager& = delete;
+
 	static void init(const std::string& path);
-	static ResourceManager* getInstance();
+	static auto getInstance() -> ResourceManager*;
+
+	virtual ~ResourceManager() {}
 
 	template<class T>
-	Resource* addResource(T* rawResource);
+	auto addResource(T* rawResource) -> Resource*;
 	template<class T>
-	Resource* getResource(size_t nameHash) const;
+	[[nodiscard]] auto getResource(size_t nameHash) const -> Resource*;
 	template<class T>
 	void removeResource(size_t nameHash);
 	template<class T>
-	std::vector<T*> loadResources(const std::string& path);
+	auto loadResources(const std::string& path) -> std::vector<T*>;
 	template<class T>
-	T* loadResource(const std::string& path);
+	auto loadResource(const std::string& path) -> T*;
+	template<class T>
+	void saveResource(T* resource, const std::string& path);
 	
 	void scan(const std::string& path);
-	std::string getFileString(const std::string& path);
+	auto getFileString(const std::string& path) -> std::string;
+	void writeFileString(const std::string& path, const std::string& fileString);
 private:
 	static ResourceManager* instance;
 	std::string currentDir;
 	ResourceManager(const std::string& initialDir);
 	ResourceManager() = default;
-	ResourceManager(const ResourceManager&) = delete;
-	ResourceManager& operator=(const ResourceManager&) = delete;
-	ResourceManager(ResourceManager&&) = delete;
-	ResourceManager& operator=(ResourceManager&&) = delete;
 
 	tsl::hopscotch_map<uint64_t, tsl::hopscotch_map<uint64_t, Resource*>> _resources;
 };
 
 template<class T>
-Resource* ResourceManager::addResource(T* rawResource) {
+auto ResourceManager::addResource(T* rawResource) -> Resource* {
 	if(!rawResource)
 		return nullptr;
-	Resource* resource = new Resource;
+	auto *resource = new Resource;
 	resource->writeResource(rawResource, [rawResource](){
 		delete rawResource;
 	});
-	uint64_t resourceTypeHash = T::type_hash;
+	uint64_t resourceTypeHash = T::typeHash;
 	uint64_t resourceNameHash = rawResource->getNameHash();
 	auto resourcesWithType = _resources.find(resourceTypeHash);
 	if(resourcesWithType != _resources.end()) {
@@ -60,9 +66,7 @@ Resource* ResourceManager::addResource(T* rawResource) {
 		if(resourceIt != resourcesWithType.value().end()) {
 			return resourceIt.value();
 		}
-		else {
-			resourcesWithType.value()[resourceNameHash] = resource;
-		}
+		resourcesWithType.value()[resourceNameHash] = resource;
 	}
 	else {
 		tsl::hopscotch_map<uint64_t, Resource*> newType = {std::pair<uint64_t, Resource*>{resourceNameHash, resource}};
@@ -73,8 +77,8 @@ Resource* ResourceManager::addResource(T* rawResource) {
 }
 
 template<class T>
-Resource* ResourceManager::getResource(uint64_t nameHash) const {
-	uint64_t resourceTypeHash = T::type_hash;
+auto ResourceManager::getResource(uint64_t nameHash) const -> Resource* {
+	uint64_t resourceTypeHash = T::typeHash;
 	auto resourcesWithType = _resources.find(resourceTypeHash);
 	if(resourcesWithType != _resources.end()) {
 		auto resource = resourcesWithType.value().find(nameHash);
@@ -87,7 +91,7 @@ Resource* ResourceManager::getResource(uint64_t nameHash) const {
 
 template<class T>
 void ResourceManager::removeResource(uint64_t nameHash) {
-	uint64_t resourceTypeHash = T::type_hash;
+	uint64_t resourceTypeHash = T::typeHash;
 	auto resourcesWithType = _resources.find(resourceTypeHash);
 	if(resourcesWithType != _resources.end()) {
 		auto resource = resourcesWithType.value().find(nameHash);
@@ -98,7 +102,7 @@ void ResourceManager::removeResource(uint64_t nameHash) {
 }
 
 template<class T>
-std::vector<T*> ResourceManager::loadResources(const std::string& path) {
+auto ResourceManager::loadResources(const std::string& path) -> std::vector<T*> {
 	std::vector<T*> result;
 	std::string serializedData = getFileString(path);
 	if(!serializedData.empty()) {
@@ -109,12 +113,17 @@ std::vector<T*> ResourceManager::loadResources(const std::string& path) {
 }
 
 template<class T>
-T* ResourceManager::loadResource(const std::string& path) {
+auto ResourceManager::loadResource(const std::string& path) -> T* {
 	std::string serializedData = getFileString(path);
 	if(!serializedData.empty()) {
 		return T::deserialize(serializedData);
 	}
 	return new T();
+}
+
+template<class T>
+void ResourceManager::saveResource(T* resource, const std::string& path) {
+	writeFileString(path, resource->_serialize());
 }
 
 #endif

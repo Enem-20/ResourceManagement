@@ -3,7 +3,9 @@
 
 #include <functional>
 
-class Resource {
+#include "ResourceManagementEXPORT.hpp"
+
+class RESOURCE_MANAGEMENT_EXPORT Resource {
 public:
     Resource();
     ~Resource();

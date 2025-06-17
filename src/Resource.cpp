@@ -1,8 +1,6 @@
 #include "Resource.hpp"
 
-Resource::Resource() {
-
-}
+Resource::Resource() = default;
 
 Resource::~Resource() {
     _destroyer();

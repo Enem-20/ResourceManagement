@@ -1,0 +1,21 @@
+CompileFlags:
+  CompilationDatabase: build
+Diagnostics:
+  ClangTidy:
+    Add: [
+      modernize-*,
+      performance-*,
+      readability-*,
+      bugprone-*,
+      portability-*,
+      cppcoreguidelines-*
+    ]
+    CheckOptions:
+      modernize-use-trailing-return: true
+      readability-identifier-naming.VariableCase: camelBack
+  UnusedIncludes: Strict
+InlayHints:
+  Enabled: Yes
+Index:
+  External: None
+  Background: Yes
