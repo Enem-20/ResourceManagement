@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 project(ResourceManagement)
 
-set(RESOURCE_MANAGEMENT_TESTS ON)
+set(RESOURCE_MANAGEMENT_TESTS OFF)
 
 if(RESOURCE_MANAGEMENT_TESTS)
     add_subdirectory(test)

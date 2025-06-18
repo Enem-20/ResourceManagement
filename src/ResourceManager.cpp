@@ -7,9 +7,9 @@
 
 ResourceManager* ResourceManager::instance;
 
-void ResourceManager::init(const std::string& path) {
+void ResourceManager::init(int argc, const char** argv) {
 	if(!instance)
-		instance = new ResourceManager(path);
+		instance = new ResourceManager(argc, argv);
 }
 
 auto ResourceManager::getInstance() -> ResourceManager* {
@@ -50,8 +50,23 @@ void ResourceManager::writeFileString(const std::string& path, const std::string
 	}
 }
 
-ResourceManager::ResourceManager(const std::string& initialDir) 
-	: currentDir(initialDir)
+ResourceManager::ResourceManager(int argc, const char** argv) 
+	: currentDir(std::filesystem::absolute(argv[0]).parent_path().string())
 {
 
+}
+
+void ResourceManager::freeAllResources() {
+	for(auto resourcesWithType : _resources) {
+		if(!resourcesWithType.second.empty()) {
+			for(auto resourceIt : resourcesWithType.second) {
+				if(resourceIt.second != nullptr) {
+					delete resourceIt.second;
+				}
+					
+			}
+			resourcesWithType.second.clear();
+		}
+	}
+	_resources.clear();
 }

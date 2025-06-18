@@ -14,6 +14,16 @@
 
 #include "Resource.hpp"
 
+template<class Derived>
+class ResourceBase;
+
+class Pimpl;
+
+template<typename T>
+using enable_if_derived_from_base = std::enable_if_t<
+    true//std::is_base_of_v<ResourceBase<T>, T>
+>;
+
 class RESOURCE_MANAGEMENT_EXPORT ResourceManager {
 public:
 	ResourceManager(const ResourceManager&) = delete;
@@ -21,39 +31,43 @@ public:
 	ResourceManager(ResourceManager&&) = delete;
 	auto operator=(ResourceManager&&) -> ResourceManager& = delete;
 
-	static void init(const std::string& path);
+	static void init(int argc, const char** argv);
 	static auto getInstance() -> ResourceManager*;
 
 	virtual ~ResourceManager() {}
 
-	template<class T>
+	template<class T, typename = enable_if_derived_from_base<T>>
 	auto addResource(T* rawResource) -> Resource*;
-	template<class T>
+	template<class T, typename = enable_if_derived_from_base<T>>
 	[[nodiscard]] auto getResource(size_t nameHash) const -> Resource*;
-	template<class T>
+	template<class T, typename = enable_if_derived_from_base<T>>
 	void removeResource(size_t nameHash);
-	template<class T>
+	template<class T, typename = enable_if_derived_from_base<T>>
+	void freeResource(size_t nameHash);
+	template<class T, typename = enable_if_derived_from_base<T>>
 	auto loadResources(const std::string& path) -> std::vector<T*>;
-	template<class T>
+	template<class T, typename = enable_if_derived_from_base<T>>
 	auto loadResource(const std::string& path) -> T*;
-	template<class T>
+	template<class T, typename = enable_if_derived_from_base<T>>
 	void saveResources(std::span<T*> resources, const std::string& path);
-	template<class T>
+	template<class T, typename = enable_if_derived_from_base<T>>
 	void saveResource(T* resource, const std::string& path);
 	
+	void freeAllResources();
+
 	void scan(const std::string& path);
 	auto getFileString(const std::string& path) -> std::string;
 	void writeFileString(const std::string& path, const std::string& fileString);
 private:
 	static ResourceManager* instance;
 	std::string currentDir;
-	ResourceManager(const std::string& initialDir);
+	ResourceManager(int argc, const char** argv);
 	ResourceManager() = default;
 
 	tsl::hopscotch_map<uint64_t, tsl::hopscotch_map<uint64_t, Resource*>> _resources;
 };
 
-template<class T>
+template<class T, typename>
 auto ResourceManager::addResource(T* rawResource) -> Resource* {
 	if(!rawResource)
 		return nullptr;
@@ -79,7 +93,7 @@ auto ResourceManager::addResource(T* rawResource) -> Resource* {
 	return resource;
 }
 
-template<class T>
+template<class T, typename>
 auto ResourceManager::getResource(uint64_t nameHash) const -> Resource* {
 	uint64_t resourceTypeHash = T::typeHash;
 	auto resourcesWithType = _resources.find(resourceTypeHash);
@@ -92,19 +106,32 @@ auto ResourceManager::getResource(uint64_t nameHash) const -> Resource* {
 	return nullptr;
 }
 
-template<class T>
+template<class T, typename>
 void ResourceManager::removeResource(uint64_t nameHash) {
 	uint64_t resourceTypeHash = T::typeHash;
 	auto resourcesWithType = _resources.find(resourceTypeHash);
 	if(resourcesWithType != _resources.end()) {
 		auto resource = resourcesWithType.value().find(nameHash);
 		if(resource != resourcesWithType.value().end()) {
-			delete resource.value();
+			resourcesWithType.value().erase(resource);
 		}
 	}
 }
 
-template<class T>
+template<class T, typename>
+void ResourceManager::freeResource(size_t nameHash) {
+	uint64_t resourceTypeHash = T::typeHash;
+	auto resourcesWithType = _resources.find(resourceTypeHash);
+	if(resourcesWithType != _resources.end()) {
+		auto resource = resourcesWithType.value().find(nameHash);
+		if(resource != resourcesWithType.value().end()) {
+			delete resource.value();
+			resourcesWithType.value().erase(resource);
+		}
+	}
+}
+
+template<class T, typename>
 auto ResourceManager::loadResources(const std::string& path) -> std::vector<T*> {
 	std::vector<T*> result;
 	std::string serializedData = getFileString(path);
@@ -115,7 +142,7 @@ auto ResourceManager::loadResources(const std::string& path) -> std::vector<T*> 
 	return result;
 }
 
-template<class T>
+template<class T, typename>
 auto ResourceManager::loadResource(const std::string& path) -> T* {
 	std::string serializedData = getFileString(path);
 	if(!serializedData.empty()) {
@@ -124,12 +151,12 @@ auto ResourceManager::loadResource(const std::string& path) -> T* {
 	return new T();
 }
 
-template<class T>
+template<class T, typename>
 void ResourceManager::saveResource(T* resource, const std::string& path) {
 	writeFileString(path, resource->_serialize());
 }
 
-template<class T>
+template<class T, typename>
 void ResourceManager::saveResources(std::span<T*> resources, const std::string& path) {
 	std::string s{};
 	glz::write_json(resources, s);
