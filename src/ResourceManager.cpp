@@ -39,7 +39,7 @@ auto ResourceManager::getFileString(const std::string& path) -> std::string {
 
 void ResourceManager::writeFileString(const std::string& path, const std::string& fileString) {
 	try {
-		std::ofstream file(currentDir + path);
+		std::ofstream file(currentDir + "/" + path);
 		std::stringstream ss;
 		ss << fileString;
 		file << ss.rdbuf();

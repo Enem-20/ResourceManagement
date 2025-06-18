@@ -6,6 +6,7 @@
 
 #include <glaze/core/opts.hpp>
 #include <glaze/json/json_t.hpp>
+#include <glaze/json/write.hpp>
 #include <string>
 
 
@@ -35,6 +36,8 @@ public:
 	auto loadResources(const std::string& path) -> std::vector<T*>;
 	template<class T>
 	auto loadResource(const std::string& path) -> T*;
+	template<class T>
+	void saveResources(std::span<T*> resources, const std::string& path);
 	template<class T>
 	void saveResource(T* resource, const std::string& path);
 	
@@ -106,7 +109,7 @@ auto ResourceManager::loadResources(const std::string& path) -> std::vector<T*> 
 	std::vector<T*> result;
 	std::string serializedData = getFileString(path);
 	if(!serializedData.empty()) {
-		auto JSONSerializedData = glz::read_json(result, serializedData);
+		glz::read_json(result, serializedData);
 	}
 
 	return result;
@@ -124,6 +127,13 @@ auto ResourceManager::loadResource(const std::string& path) -> T* {
 template<class T>
 void ResourceManager::saveResource(T* resource, const std::string& path) {
 	writeFileString(path, resource->_serialize());
+}
+
+template<class T>
+void ResourceManager::saveResources(std::span<T*> resources, const std::string& path) {
+	std::string s{};
+	glz::write_json(resources, s);
+	writeFileString(path, s);
 }
 
 #endif

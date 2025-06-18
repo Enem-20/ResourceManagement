@@ -17,7 +17,7 @@
 static constexpr std::uint64_t FNV_OFFSET_BASIS = 0xcbf29ce484222325ULL;
 static constexpr std::uint64_t FNV_PRIME        = 0x100000001b3ULL;
 
-static constexpr std::uint64_t fnv1a(std::string_view str) {
+static constexpr auto fnv1a(std::string_view str) -> std::uint64_t {
     std::uint64_t hash = FNV_OFFSET_BASIS;
     for (unsigned char c : str) {
         hash = (hash ^ c) * FNV_PRIME;
@@ -27,7 +27,7 @@ static constexpr std::uint64_t fnv1a(std::string_view str) {
 
 // === 2.  __PRETTY_FUNCTION__ / __FUNCSIG__ ===
 template <typename T>
-static constexpr std::string_view type_name_impl() {
+static constexpr auto type_name_impl() -> std::string_view {
 #ifdef __clang__  // или GCC
     constexpr std::string_view p = __PRETTY_FUNCTION__;
     constexpr std::string_view key = "type_name_impl() [T = ";
@@ -73,8 +73,8 @@ public:
     virtual auto _serialize() -> std::string;
     virtual auto _deserialize(std::string_view json) -> Derived*;
 
-    std::string_view getName() const;
-    uint64_t getNameHash() const;
+    [[nodiscard]] auto getName() const -> std::string_view;
+    [[nodiscard]] auto getNameHash() const -> uint64_t;
     
 private:
     std::string _name;
@@ -109,7 +109,9 @@ void ResourceBase<Derived>::initialize(std::string_view name) {
 
 template<class Derived>
 auto ResourceBase<Derived>::_serialize() -> std::string {
-    return glz::write_json(*dynamic_cast<Derived*>(this)).value_or("error");
+    std::string s{};
+    glz::write_json(*dynamic_cast<Derived*>(this), s);
+    return s;
 }
 
 template<class Derived>
