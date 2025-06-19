@@ -37,7 +37,7 @@ public:
 	virtual ~ResourceManager() {}
 
 	template<class T, typename = enable_if_derived_from_base<T>>
-	auto addResource(T* rawResource) -> Resource*;
+	auto addResource(T* rawResource, std::function<void(void*)> _destroyer = [](void* resource){delete reinterpret_cast<T*>(resource);}) -> Resource*;
 	template<class T, typename = enable_if_derived_from_base<T>>
 	[[nodiscard]] auto getResource(size_t nameHash) const -> Resource*;
 	template<class T, typename = enable_if_derived_from_base<T>>
@@ -68,13 +68,11 @@ private:
 };
 
 template<class T, typename>
-auto ResourceManager::addResource(T* rawResource) -> Resource* {
+auto ResourceManager::addResource(T* rawResource, std::function<void(void*)> _destroyer) -> Resource* {
 	if(!rawResource)
 		return nullptr;
 	auto *resource = new Resource;
-	resource->writeResource(rawResource, [rawResource](){
-		delete rawResource;
-	});
+	resource->writeResource(rawResource, _destroyer);
 	uint64_t resourceTypeHash = T::typeHash;
 	uint64_t resourceNameHash = rawResource->getNameHash();
 	auto resourcesWithType = _resources.find(resourceTypeHash);

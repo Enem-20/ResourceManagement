@@ -11,14 +11,14 @@ public:
     ~Resource();
 
     template<class T>
-    void writeResource(T* resource, const std::function<void()>& destroyer);
+    void writeResource(T* resource, const std::function<void(void*)>& destroyer);
 private:
-    std::function<void()> _destroyer;
+    std::function<void(void*)> _destroyer;
     void* _resource;
 };
 
 template<class T>
-void Resource::writeResource(T* resource, const std::function<void()>& destroyer) {
+void Resource::writeResource(T* resource, const std::function<void(void*)>& destroyer) {
     _resource = reinterpret_cast<void*>(resource);
     _destroyer = destroyer;
 }

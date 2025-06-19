@@ -3,5 +3,5 @@
 Resource::Resource() = default;
 
 Resource::~Resource() {
-    _destroyer();
+    _destroyer(_resource);
 }
