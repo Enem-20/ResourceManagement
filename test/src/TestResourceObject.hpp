@@ -18,7 +18,7 @@ private:
 	ResourceBase<TestResourceObject>* _resourceBase;
 public:
 	TestResourceObject();
-	~TestResourceObject();
+	~TestResourceObject() override;
 
 	static auto deserialize(std::string_view json) -> TestResourceObject*;
 	static auto serialize(TestResourceObject* obj) -> std::string;

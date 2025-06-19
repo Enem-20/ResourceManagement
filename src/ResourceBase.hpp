@@ -56,8 +56,6 @@ struct TypeName {
     static constexpr std::string_view name = type_name_impl<T>();
 };
 
-
-
 template<class Derived>
 class ResourceBase {
     friend struct glz::meta<ResourceBase>;
@@ -69,7 +67,7 @@ public:
 	static auto serialize(Derived* obj) -> std::string;
 
     ResourceBase();
-    ~ResourceBase();
+    virtual ~ResourceBase();
 
     virtual void initialize(std::string_view name);
     virtual auto _serialize() -> std::string;
