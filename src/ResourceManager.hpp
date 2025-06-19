@@ -1,7 +1,6 @@
 #ifndef C_RESOURCE_MANAGER_HPP
 #define C_RESOURCE_MANAGER_HPP
 
-#include <cstddef>
 #include <cstdint>
 
 #include <glaze/core/opts.hpp>
@@ -39,11 +38,11 @@ public:
 	template<class T, typename = enable_if_derived_from_base<T>>
 	auto addResource(T* rawResource, std::function<void(void*)> _destroyer = [](void* resource){delete reinterpret_cast<T*>(resource);}) -> Resource*;
 	template<class T, typename = enable_if_derived_from_base<T>>
-	[[nodiscard]] auto getResource(size_t nameHash) const -> Resource*;
+	[[nodiscard]] auto getResource(uint64_t nameHash) const -> Resource*;
 	template<class T, typename = enable_if_derived_from_base<T>>
-	void removeResource(size_t nameHash);
+	void removeResource(uint64_t nameHash);
 	template<class T, typename = enable_if_derived_from_base<T>>
-	void freeResource(size_t nameHash);
+	void freeResource(uint64_t nameHash);
 	template<class T, typename = enable_if_derived_from_base<T>>
 	auto loadResources(const std::string& path) -> std::vector<T*>;
 	template<class T, typename = enable_if_derived_from_base<T>>
@@ -117,7 +116,7 @@ void ResourceManager::removeResource(uint64_t nameHash) {
 }
 
 template<class T, typename>
-void ResourceManager::freeResource(size_t nameHash) {
+void ResourceManager::freeResource(uint64_t nameHash) {
 	uint64_t resourceTypeHash = T::typeHash;
 	auto resourcesWithType = _resources.find(resourceTypeHash);
 	if(resourcesWithType != _resources.end()) {
