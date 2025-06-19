@@ -21,7 +21,7 @@ class Pimpl;
 
 template<typename T>
 using enable_if_derived_from_base = std::enable_if_t<
-    true//std::is_base_of_v<ResourceBase<T>, T>
+    std::is_base_of_v<ResourceBase<T>, T>
 >;
 
 class RESOURCE_MANAGEMENT_EXPORT ResourceManager {
