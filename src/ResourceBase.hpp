@@ -51,54 +51,88 @@ static constexpr auto type_name_impl() -> std::string_view {
 #endif
 }
 
+#define GENERATE_PIMPL(ClassName)   \
+public:                             \
+    class Impl;                     \
+private:                            \
+    std::unique_ptr<Impl> _impl;    \
+friend struct glz::meta<ClassName>;  
+   
+
 template <typename T>
 struct TypeName {
     static constexpr std::string_view name = type_name_impl<T>();
+};
+
+class Pimpl {
+public:
+
+private:
 };
 
 template<class Derived>
 class ResourceBase {
     friend struct glz::meta<ResourceBase>;
 public:
-    static constexpr std::string_view type = TypeName<Derived>::name;
+    static constexpr std::string_view type = TypeName<Derived>::name; 
     static constexpr std::uint64_t typeHash = fnv1a(type);
 
     static auto deserialize(std::string_view json) -> Derived*;
-	static auto serialize(Derived* obj) -> std::string;
+	static auto serialize(ResourceBase* obj) -> std::string;
 
     ResourceBase();
     virtual ~ResourceBase();
 
     virtual void initialize(std::string_view name);
-    virtual auto _serialize() -> std::string;
-    virtual auto _deserialize(std::string_view json) -> Derived*;
+    virtual std::string _serialize() const;
+    virtual Derived* _deserialize(std::string_view json);
 
     [[nodiscard]] auto getName() const -> std::string_view;
     [[nodiscard]] auto getNameHash() const -> uint64_t;
 protected:
     std::string _name;
     uint64_t _nameHash{};
-    
-};
-
-template<class Derived>
-struct glz::meta<ResourceBase<Derived>> {
-    static constexpr auto value = glz::object(
-        &ResourceBase<Derived>::_name
-    );
 };
 
 template<class Derived>
 auto ResourceBase<Derived>::deserialize(std::string_view json) -> Derived* {
-    auto obj = new Derived();
-    obj->_deserialize(json);
+    Derived* obj = new Derived;
+    glz::read_json(*dynamic_cast<Derived*>(obj), json);
     return obj;
 }
 
 template<class Derived>
-auto ResourceBase<Derived>::serialize(Derived* obj) -> std::string {
-    return obj->_serialize();
+auto ResourceBase<Derived>::serialize(ResourceBase* obj) -> std::string {
+    std::string str;
+    glz::write_json(obj, str);
+    return str;
 }
+
+template<class Derived>
+void ResourceBase<Derived>::initialize(std::string_view name) {
+    _name = name;
+    _nameHash = fnv1a(name);
+}
+
+template<class Derived>
+std::string ResourceBase<Derived>::_serialize() const {
+    std::string str{};
+    glz::write_json(this, str);
+    return str;
+}
+
+template<class Derived>
+Derived* ResourceBase<Derived>::_deserialize(std::string_view json) {
+    Derived* obj = dynamic_cast<Derived*>(this);
+    glz::read_json(obj, json);
+    return obj;
+}
+
+template<class Derived> struct glz::meta<ResourceBase<Derived>> {
+    static constexpr auto value = glz::object(
+        &ResourceBase<Derived>::_name
+    );
+};
 
 template<class Derived>
 ResourceBase<Derived>::ResourceBase() {
@@ -110,27 +144,7 @@ ResourceBase<Derived>::~ResourceBase() {
 
 }
 
-template <class Derived>
-void ResourceBase<Derived>::initialize(std::string_view name) {
-    _name = name;
-    _nameHash = fnv1a(_name);
-}
-
 template<class Derived>
-auto ResourceBase<Derived>::_serialize() -> std::string {
-    std::string s{};
-    glz::write_json(*dynamic_cast<Derived*>(this), s);
-    return s;
-}
-
-template<class Derived>
-auto ResourceBase<Derived>::_deserialize(std::string_view json) -> Derived* {
-    auto obj = new Derived();
-    glz::read_json(obj, json);
-    return obj;
-}
-
-template <class Derived>
 auto ResourceBase<Derived>::getName() const -> std::string_view {
     return _name;
 }
@@ -139,5 +153,4 @@ template<class Derived>
 auto ResourceBase<Derived>::getNameHash() const -> uint64_t {
     return _nameHash;
 }
-
 #endif

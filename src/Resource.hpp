@@ -5,6 +5,7 @@
 
 #include "ResourceManagementEXPORT.hpp"
 
+
 class RESOURCE_MANAGEMENT_EXPORT Resource {
 public:
     Resource();
@@ -14,12 +15,12 @@ public:
     void writeResource(T* resource, const std::function<void(void*)>& destroyer);
 private:
     std::function<void(void*)> _destroyer;
-    void* _resource;
+    void* _resource = nullptr;
 };
 
 template<class T>
 void Resource::writeResource(T* resource, const std::function<void(void*)>& destroyer) {
-    _resource = reinterpret_cast<void*>(resource);
+    _resource = resource;
     _destroyer = destroyer;
 }
 

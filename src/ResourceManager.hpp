@@ -2,10 +2,9 @@
 #define C_RESOURCE_MANAGER_HPP
 
 #include <cstdint>
+#include <iostream>
 
-#include <glaze/core/opts.hpp>
-#include <glaze/json/json_t.hpp>
-#include <glaze/json/write.hpp>
+#include <glaze/glaze.hpp>
 #include <string>
 
 
@@ -36,7 +35,11 @@ public:
 	virtual ~ResourceManager() {}
 
 	template<class T, typename = enable_if_derived_from_base<T>>
-	auto addResource(T* rawResource, std::function<void(void*)> _destroyer = [](void* resource){delete reinterpret_cast<T*>(resource);}) -> Resource*;
+	auto addResource(T* rawResource, const std::function<void(void*)>& _destroyer = [](void* resource){
+		std::cout << "deleting..." << T::type << '\n';
+		T* corrected = reinterpret_cast<T*>(resource);
+		delete corrected;
+	}) -> Resource*;
 	template<class T, typename = enable_if_derived_from_base<T>>
 	[[nodiscard]] auto getResource(uint64_t nameHash) const -> Resource*;
 	template<class T, typename = enable_if_derived_from_base<T>>
@@ -67,7 +70,7 @@ private:
 };
 
 template<class T, typename>
-auto ResourceManager::addResource(T* rawResource, std::function<void(void*)> _destroyer) -> Resource* {
+auto ResourceManager::addResource(T* rawResource, const std::function<void(void*)>& _destroyer) -> Resource* {
 	if(!rawResource)
 		return nullptr;
 	auto *resource = new Resource;
