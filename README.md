@@ -1,4 +1,4 @@
-# How to Use the library
+# How to use the library
 ## Compiler requirements
 Your compiler must support C++20 concepts. Minimum versions:
 -   GCC ≥ 12
@@ -155,3 +155,7 @@ This example:
 3.  Registers it with the manager via `addResource`.
 4.  Prints the JSON representation produced by `serialize()`.
 5.  Calls `unloadResources()` to clean up all managed resources.
+
+## License
+
+This project is licensed under the MIT License – see the [LICENSE](LICENSE) file for details.
