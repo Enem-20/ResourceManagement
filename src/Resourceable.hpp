@@ -13,6 +13,7 @@
 #include <concepts>
 #include <string>
 #include <cstdint>
+#include <vector>
 
 template<class T>
 concept is_resourceable = requires(T obj) {
@@ -23,8 +24,8 @@ concept is_resourceable = requires(T obj) {
     {obj.setName(std::string{})} -> std::convertible_to<void>;
     {obj.getPath()} -> std::convertible_to<std::string>;
     {obj.setPath(std::string{})} -> std::convertible_to<void>;
-	{T::deserialize(std::string{})} -> std::convertible_to<T*>;
-    {obj.serialize()} -> std::convertible_to<std::string>;
+	{T::deserialize(std::vector<std::byte>{})} -> std::convertible_to<T*>;
+    {obj.serialize()} -> std::convertible_to<std::vector<std::byte>>;
 };
 
 constexpr auto fnv1a_32(const char* str, std::size_t len) -> std::uint32_t {

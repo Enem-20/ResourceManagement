@@ -24,8 +24,8 @@ public:
 	TestResourceObject();
 	~TestResourceObject();
 
-	static auto deserialize(const std::string& serialized) -> TestResourceObject*;
-	auto serialize() const -> std::string;
+	static auto deserialize(const std::vector<std::byte>& serialized) -> TestResourceObject*;
+	auto serialize() const -> std::vector<std::byte>;
 };
 
 #endif

@@ -19,8 +19,9 @@ auto main(int argc, const char** argv) -> int {
 	testObject->setPath("testObject.json");
 	resourceManager->addResource(testObject);
 
+	auto serialized = testObject->serialize();
 
-	std::cout << "serialized: " << testObject->serialize() << '\n';
+	std::cout << "serialized: " << std::string_view(reinterpret_cast<const char*>(serialized.data()), serialized.size()) << '\n';
 
 	resourceManager->unloadResources();
 	return 0;

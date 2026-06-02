@@ -68,8 +68,8 @@ private:
         const std::function<void(void*)>& destroyer, const std::function<void(void*)>& saver);
     void removeResourcePrivate(std::string_view type, std::string_view name);
     auto getResourcePrivate(std::string_view type, std::string_view name) -> void*;
-    auto loadResourcePrivate(const std::string& path) -> std::string;
-    void saveResourcePrivate(const std::string& serialized, const std::string& path);
+    auto loadResourcePrivate(const std::string& path) -> std::vector<std::byte>;
+    void saveResourcePrivate(const std::vector<std::byte>& serialized, const std::string& path);
 };
 
 #endif // C_RESOURCE_MANAGER_HPP

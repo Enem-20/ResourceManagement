@@ -92,8 +92,25 @@ public:
         return result;
     }
 
-    auto loadResource(const std::string& path) -> std::string {
-        return getFileString(path);
+    auto loadFileBytes(const std::string& path) -> std::vector<std::byte> {
+        std::vector<std::byte> data;
+        FILE* f = std::fopen(path.c_str(), "rb");
+        if (!f) return data;
+
+        std::fseek(f, 0, SEEK_END);
+        long size = std::ftell(f);
+        if (size > 0) {
+            std::rewind(f);
+            data.resize(size);
+            size_t r = std::fread(data.data(), 1, size, f);
+            if (r != size) data.clear();
+        }
+        std::fclose(f);
+        return data;
+    }
+
+    auto loadResource(const std::string& path) -> std::vector<std::byte> {
+        return loadFileBytes(path);
     }
 
     void writeFileString(const std::string& path, const std::string& fileString) {
@@ -110,8 +127,18 @@ public:
         std::fclose(file);
     }
 
-    void saveResource(const std::string& serialized, const std::string& path) {
-        writeFileString(path, serialized);
+    void writeBinaryFileC(const char* path, const std::vector<std::byte>& data) {
+        FILE* f = std::fopen(path, "wb");
+        if (!f) return;
+
+        size_t written = std::fwrite(data.data(), 1, data.size(), f);
+        std::fclose(f);
+
+        //return written == data.size();
+    }
+
+    void saveResource(const std::vector<std::byte>& serialized, const std::string& path) {
+        writeBinaryFileC(path.c_str(), serialized);
     }
 
     void unloadResources() {
@@ -173,9 +200,9 @@ void ResourceManager::removeResourcePrivate(std::string_view type, std::string_v
 auto ResourceManager::getResourcePrivate(std::string_view type, std::string_view name) -> void* {
     return _impl->getResource(type, name);
 }
-auto ResourceManager::loadResourcePrivate(const std::string& path) -> std::string {
+auto ResourceManager::loadResourcePrivate(const std::string& path) -> std::vector<std::byte> {
     return _impl->loadResource(path);
 }
-void ResourceManager::saveResourcePrivate(const std::string& serialized, const std::string& path) {
+void ResourceManager::saveResourcePrivate(const std::vector<std::byte>& serialized, const std::string& path) {
     _impl->saveResource(serialized, path);
 }
