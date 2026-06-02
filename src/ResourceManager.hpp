@@ -42,7 +42,6 @@ public:
 
     template<is_resourceable T>
     void removeResource(std::string_view name) {
-        void* rawResource = reinterpret_cast<void*>(rawResource);
         removeResourcePrivate(T::type, name);
     }
 
