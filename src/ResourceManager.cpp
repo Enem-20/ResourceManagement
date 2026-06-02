@@ -20,30 +20,34 @@ public:
         const std::function<void(void*)>& destroyer, const std::function<void(void*)>& saver) {
         if(resource == nullptr)
             return;
-        auto resourcesWithType = _resources.find(type);
+        std::string typeString(type);
+        std::string nameString(name);
+        auto resourcesWithType = _resources.find(typeString);
         if(resourcesWithType != _resources.end()) {
-            auto resourceIt = resourcesWithType.value().find(name);
+            auto resourceIt = resourcesWithType.value().find(nameString);
             if(resourceIt != resourcesWithType.value().end()) {
                 return;
             }
             auto *resourceWrapper = new Resource;
             resourceWrapper->writeResource(resource, destroyer, saver);
-            resourcesWithType.value()[name] = resourceWrapper;
+            resourcesWithType.value()[nameString] = resourceWrapper;
         }
         else {
             InnerMap newType;
             auto *resourceWrapper = new Resource;
             resourceWrapper->writeResource(resource, destroyer, saver);
-            newType[name] = resourceWrapper;
+            newType[nameString] = resourceWrapper;
             
-            _resources[type] = newType;
+            _resources[typeString] = newType;
         }
     }
 
     void removeResource(std::string_view type, std::string_view name) {
-        auto resourcesWithType = _resources.find(type);
+        std::string typeString(type);
+        std::string nameString(name);
+        auto resourcesWithType = _resources.find(typeString);
         if(resourcesWithType != _resources.end()) {
-            auto resource = resourcesWithType.value().find(name);
+            auto resource = resourcesWithType.value().find(nameString);
             if(resource != resourcesWithType.value().end()) {
                 delete resource.value();
                 resourcesWithType.value().erase(resource);
@@ -52,9 +56,11 @@ public:
     }
 
     auto getResource(std::string_view type, std::string_view name) -> void* {
-        auto resourcesWithType = _resources.find(type);
+        std::string typeString(type);
+        std::string nameString(name);
+        auto resourcesWithType = _resources.find(typeString);
         if(resourcesWithType != _resources.end()) {
-            auto resource = resourcesWithType.value().find(name);
+            auto resource = resourcesWithType.value().find(nameString);
             if(resource != resourcesWithType.value().end()) {
                 return resource.value()->getResource();
             }
@@ -126,8 +132,8 @@ public:
         }
     }
 private:
-    using InnerMap = tsl::hopscotch_map<std::string_view, Resource*>;
-    using OuterMap = tsl::hopscotch_map<std::string_view, InnerMap>;
+    using InnerMap = tsl::hopscotch_map<std::string, Resource*>;
+    using OuterMap = tsl::hopscotch_map<std::string, InnerMap>;
     OuterMap _resources;
 };
 
