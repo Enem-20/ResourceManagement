@@ -113,10 +113,9 @@ public:
             for(const auto& [name, resource] : resources) {
                 resource->save();
                 delete resource;
-                _resources[type].erase(name);
             }
-            _resources.erase(type);
         }
+        _resources.clear();
     }
 
     void saveAllResources() {
