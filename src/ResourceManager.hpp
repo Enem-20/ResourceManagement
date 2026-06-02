@@ -47,7 +47,7 @@ public:
 
     template<is_resourceable T>
     auto getResource(std::string_view name) -> T* {
-        reinterpret_cast<T*>(getResourcePrivate(T::type, name));
+        return reinterpret_cast<T*>(getResourcePrivate(T::type, name));
     }
 
     template<is_resourceable T>
