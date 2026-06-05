@@ -10,10 +10,14 @@
 #define C_RESOURCEABLE_HPP
 
 #include <type_traits>
-#include <concepts>
+
 #include <string>
 #include <cstdint>
 #include <vector>
+
+
+#if __cpp_concepts >= 201907L
+#include <concepts>
 
 template<class T>
 concept is_resourceable = requires(T obj) {
@@ -27,6 +31,19 @@ concept is_resourceable = requires(T obj) {
 	{T::deserialize(std::vector<std::byte>{})} -> std::convertible_to<T*>;
     {obj.serialize()} -> std::convertible_to<std::vector<std::byte>>;
 };
+
+#elif (defined(__cplusplus) && __cplusplus >= 201703L) || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
+    #if defined(__has_include)
+        #if __has_include(<type_traits>) && __has_include(<utility>)
+            #include <type_traits>
+            #include <utility>
+
+            #if defined(__cpp_lib_logical_traits) && __cpp_lib_logical_traits >= 201510L
+                #include "Resourceable17.hpp"
+            #endif
+        #endif
+    #endif
+#endif
 
 constexpr auto fnv1a_32(const char* str, std::size_t len) -> std::uint32_t {
     constexpr uint32_t initialHash = 2166136261U;

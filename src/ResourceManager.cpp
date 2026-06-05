@@ -16,38 +16,34 @@
 
 class ResourceManager::Impl {
 public:
-    void addResource(void* resource, std::string_view type, std::string_view name, const std::string& path,
+    void addResource(void* resource, uint64_t type, uint64_t name, const std::string& path,
         const std::function<void(void*)>& destroyer, const std::function<void(void*)>& saver) {
         if(resource == nullptr)
             return;
-        std::string typeString(type);
-        std::string nameString(name);
-        auto resourcesWithType = _resources.find(typeString);
+        auto resourcesWithType = _resources.find(type);
         if(resourcesWithType != _resources.end()) {
-            auto resourceIt = resourcesWithType.value().find(nameString);
+            auto resourceIt = resourcesWithType.value().find(name);
             if(resourceIt != resourcesWithType.value().end()) {
                 return;
             }
             auto *resourceWrapper = new Resource;
             resourceWrapper->writeResource(resource, destroyer, saver);
-            resourcesWithType.value()[nameString] = resourceWrapper;
+            resourcesWithType.value()[name] = resourceWrapper;
         }
         else {
             InnerMap newType;
             auto *resourceWrapper = new Resource;
             resourceWrapper->writeResource(resource, destroyer, saver);
-            newType[nameString] = resourceWrapper;
+            newType[name] = resourceWrapper;
             
-            _resources[typeString] = newType;
+            _resources[type] = newType;
         }
     }
 
-    void removeResource(std::string_view type, std::string_view name) {
-        std::string typeString(type);
-        std::string nameString(name);
-        auto resourcesWithType = _resources.find(typeString);
+    void removeResource(uint64_t type, uint64_t name) {
+        auto resourcesWithType = _resources.find(type);
         if(resourcesWithType != _resources.end()) {
-            auto resource = resourcesWithType.value().find(nameString);
+            auto resource = resourcesWithType.value().find(name);
             if(resource != resourcesWithType.value().end()) {
                 delete resource.value();
                 resourcesWithType.value().erase(resource);
@@ -55,12 +51,10 @@ public:
         }
     }
 
-    auto getResource(std::string_view type, std::string_view name) -> void* {
-        std::string typeString(type);
-        std::string nameString(name);
-        auto resourcesWithType = _resources.find(typeString);
+    auto getResource(uint64_t type, uint64_t name) -> void* {
+        auto resourcesWithType = _resources.find(type);
         if(resourcesWithType != _resources.end()) {
-            auto resource = resourcesWithType.value().find(nameString);
+            auto resource = resourcesWithType.value().find(name);
             if(resource != resourcesWithType.value().end()) {
                 return resource.value()->getResource();
             }
@@ -76,7 +70,6 @@ public:
             return result;
         }
 
-        // Determine file size
         std::fseek(file, 0, SEEK_END);
         long size = std::ftell(file);
         std::rewind(file);
@@ -159,8 +152,8 @@ public:
         }
     }
 private:
-    using InnerMap = tsl::hopscotch_map<std::string, Resource*>;
-    using OuterMap = tsl::hopscotch_map<std::string, InnerMap>;
+    using InnerMap = tsl::hopscotch_map<uint64_t, Resource*>;
+    using OuterMap = tsl::hopscotch_map<uint64_t, InnerMap>;
     OuterMap _resources;
 };
 
@@ -190,14 +183,14 @@ void ResourceManager::saveAllResources() {
     _impl->saveAllResources();
 }
 
-void ResourceManager::addResourcePrivate(void* resource, std::string_view type, std::string_view name, const std::string& path,
+void ResourceManager::addResourcePrivate(void* resource, uint64_t type, uint64_t name, const std::string& path,
     const std::function<void(void*)>& destroyer, const std::function<void(void*)>& saver) {
     _impl->addResource(resource, type, name, path, destroyer, saver);
 }
-void ResourceManager::removeResourcePrivate(std::string_view type, std::string_view name) {
+void ResourceManager::removeResourcePrivate(uint64_t type, uint64_t name) {
     _impl->removeResource(type, name);
 }
-auto ResourceManager::getResourcePrivate(std::string_view type, std::string_view name) -> void* {
+auto ResourceManager::getResourcePrivate(uint64_t type, uint64_t name) -> void* {
     return _impl->getResource(type, name);
 }
 auto ResourceManager::loadResourcePrivate(const std::string& path) -> std::vector<std::byte> {

@@ -1,10 +1,38 @@
 # How to use the library
 ## Compiler requirements
-Your compiler must support C++20 concepts. Minimum versions:
--   GCC ≥ 12
--   Clang ≥ 14   
+Your compiler must support C++17. Minimum recommended versions:
+- GCC ≥ 10 (or GCC 8 on Ubuntu 22.04, but other distributions may have issues)
+- Clang ≥ 10
+- MSVC ≥ 2019 (16.8)
+
+The library no longer requires C++20 concepts. 
 
 *Note: The serialisation example uses the [Glaze](https://github.com/stephenberry/glaze) library, which requires C++23 or higher. The core ResourceManagement library itself works with C++20.*
+
+## New in v1.1.0: Inheritance support
+
+You can extend any resourceable class using the `GENERATE_RESOURCEABLE_EXTEND` macro. It adds additional data members to the generated internal structure while preserving all base class functionality.
+
+### Example
+
+```cpp
+struct NestedObjectExtended {
+	std::string nestedTestExtended = "nestedTestExtended";
+};
+
+class TestResourceObjectExtended : public TestResourceObject {
+	GENERATE_RESOURCEABLE_EXTEND(TestResourceObjectExtended,
+		NestedObjectExtended nestedExtended;
+	, TestResourceObject)
+public:
+	TestResourceObjectExtended();
+	~TestResourceObjectExtended();
+
+	static auto deserialize(const std::vector<std::byte>& serialized) -> TestResourceObjectExtended*;
+	auto serialize() const -> std::vector<std::byte>;
+};
+```
+
 ## Fetching the Sources
 
 You can obtain the library either as a standalone clone or as a Git submodule.
