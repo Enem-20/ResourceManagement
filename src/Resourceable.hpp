@@ -54,23 +54,36 @@ constexpr auto hash_string(std::string_view sv) noexcept {
     return fnv1a_64(sv.data(), sv.size());
 }
 
-#define GENERATE_RESOURCEABLE(className, dataMembers) \
-public: \
-    struct className##Data {                                            \
-        std::string name;                                               \
-        std::string path;                                               \
-        dataMembers                                                     \
-    };                                                                  \
-private:                                                                \
-    className##Data _data;                                              \
-public:                                                                 \
-    static constexpr std::string_view type = #className;                \
-    static constexpr uint64_t typeHash = hash_string(#className);       \
-                                                                        \
-    void setName(const std::string& name) { _data.name = name; }        \
-    std::string_view getName() const { return _data.name; }             \
-    uint64_t getNameHash() const { return hash_string(_data.name); }    \
-    void setPath(std::string path) { _data.path = path; }               \
-    const std::string& getPath() const { return _data.path; }           \
+#define GENERATE_RESOURCEABLE(className, dataMembers)                               \
+protected:                                                                          \
+    struct Data {                                                                   \
+        std::string name;                                                           \
+        std::string path;                                                           \
+        dataMembers                                                                 \
+    };                                                                              \
+    Data _data;                                                                     \
+                                                                                    \
+public:                                                                             \
+    static constexpr std::string_view type = #className;                            \
+    static constexpr uint64_t typeHash = hash_string(#className);                   \
+                                                                                    \
+    void setName(const std::string& name) { _data.name = name; }                    \
+    std::string_view getName() const { return _data.name; }                         \
+    uint64_t getNameHash() const { return hash_string(_data.name); }                \
+    void setPath(std::string path) { _data.path = std::move(path); }                \
+    const std::string& getPath() const { return _data.path; }
+
+#define GENERATE_RESOURCEABLE_EXTEND(className, dataMembers, baseClassName)         \
+protected:                                                                          \
+    struct Data {                                                                   \
+        baseClassName::Data& base;                                                  \
+        dataMembers                                                                 \
+    };                                                                              \
+    Data _data{baseClassName::_data};                                               \
+                                                                                    \
+public:                                                                             \
+    static constexpr std::string_view type = #className;                            \
+    static constexpr uint64_t typeHash = hash_string(#className);                   \
+
 
 #endif // C_RESOURCEABLE_HPP

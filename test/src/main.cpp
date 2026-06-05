@@ -11,10 +11,11 @@
 #include <ResourceManager.hpp>
 
 #include "TestResourceObject.hpp"
+#include "TestResourceObjectExtended.hpp"
 
 auto main(int argc, const char** argv) -> int {
 	ResourceManager* resourceManager = ResourceManager::getInstance();
-	TestResourceObject* testObject = new TestResourceObject();
+	TestResourceObjectExtended* testObject = new TestResourceObjectExtended();
 	testObject->setName("test");
 	testObject->setPath("testObject.json");
 	resourceManager->addResource(testObject);
