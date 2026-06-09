@@ -8,6 +8,7 @@
 
 #include <type_traits>
 #include <string>
+#include <vector>
 #include <cstdint>
 
 template <typename T, typename = void>
@@ -23,16 +24,16 @@ struct is_resourceable<T, std::void_t<
     decltype(std::declval<T&>().setName(std::declval<std::string>())),
     decltype(std::declval<T&>().getPath()),
     decltype(std::declval<T&>().setPath(std::declval<std::string>())),
-    decltype(T::deserialize(std::declval<std::string>())),
+    decltype(T::deserialize(std::declval<std::vector<std::byte>>())),
     decltype(std::declval<T&>().serialize())
 >> : std::integral_constant<bool,
-    std::is_convertible<decltype(T::typeHash), uint64_t>::value &&
-    std::is_convertible<decltype(T::type), std::string_view>::value &&
-    std::is_convertible<decltype(std::declval<T&>().getNameHash()), uint64_t>::value &&
-    std::is_convertible<decltype(std::declval<T&>().getName()), std::string_view>::value &&
-    std::is_convertible<decltype(std::declval<T&>().getPath()), std::string>::value &&
-    std::is_convertible<decltype(T::deserialize(std::declval<std::string>())), T*>::value &&
-    std::is_convertible<decltype(std::declval<T&>().serialize()), std::string>::value
+    std::is_convertible_v<decltype(T::typeHash), uint64_t> &&
+    std::is_convertible_v<decltype(T::type), std::string_view> &&
+    std::is_convertible_v<decltype(std::declval<T&>().getNameHash()), uint64_t> &&
+    std::is_convertible_v<decltype(std::declval<T&>().getName()), std::string_view> &&
+    std::is_convertible_v<decltype(std::declval<T&>().getPath()), std::string> &&
+    std::is_convertible_v<decltype(T::deserialize(std::declval<std::vector<std::byte>>())), T*> &&
+    std::is_convertible_v<decltype(std::declval<T&>().serialize()), std::vector<std::byte>>
 > {};
 
 template <typename T>

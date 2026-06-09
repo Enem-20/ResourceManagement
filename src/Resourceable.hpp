@@ -87,7 +87,7 @@ public:                                                                         
     void setName(const std::string& name) { _data.name = name; }                    \
     std::string_view getName() const { return _data.name; }                         \
     uint64_t getNameHash() const { return hash_string(_data.name); }                \
-    void setPath(std::string path) { _data.path = std::move(path); }                \
+    void setPath(const std::string& path) { _data.path = path; }                    \
     const std::string& getPath() const { return _data.path; }
 
 #define GENERATE_RESOURCEABLE_EXTEND(className, dataMembers, baseClassName)         \
