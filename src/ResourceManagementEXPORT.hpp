@@ -7,9 +7,5 @@
     #define RESOURCE_MANAGEMENT_EXPORT __declspec(dllimport)
   #endif
 #else
-  #ifdef RESOURCE_MANAGEMENT_EXPORTS
-    #define RESOURCE_MANAGEMENT_EXPORT __attribute__ ((visibility ("default")))
-  #else
-    #define RESOURCE_MANAGEMENT_EXPORT
-  #endif
+  #define RESOURCE_MANAGEMENT_EXPORT
 #endif

@@ -13,8 +13,9 @@
 #include <iostream>
 
 #include "Resourceable.hpp"
+#include "ResourceManagementEXPORT.hpp"
 
-class ResourceManager {
+class RESOURCE_MANAGEMENT_EXPORT ResourceManager {
     class Impl;
     Impl* _impl;
     
