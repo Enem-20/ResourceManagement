@@ -7,7 +7,7 @@ Your compiler must support C++17. Minimum recommended versions:
 
 The library no longer requires C++20 concepts. 
 
-*Note: The serialisation example uses the [Glaze](https://github.com/stephenberry/glaze) library, which requires C++23 or higher. The core ResourceManagement library itself works with C++20.*
+*Note: The serialisation example uses the [Glaze](https://github.com/stephenberry/glaze) library, which requires C++23 or higher. The core ResourceManagement library itself works with C++17.*
 
 ## New in v1.1.0: Inheritance support
 
