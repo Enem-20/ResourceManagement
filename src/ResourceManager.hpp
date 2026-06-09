@@ -40,11 +40,11 @@ public:
         delete corrected;
     }, const std::function<void(void*)>& saver = [](void* resource) -> void {
         T* corrected = reinterpret_cast<T*>(resource);
-        ResourceManager::getInstance()->saveResourcePrivate(corrected->serialize(), corrected->getPath());
+        ResourceManager::getInstance()->saveResource<T>(corrected, corrected->getPath());
     }) {
         rawResource->setNameRehashCallback([this, rawResource](uint64_t hash) -> void {
             std::cout << "name rehash callback new hash: " << hash << "\n";
-            renameResourcePrivate(T::typeHash, rawResource->getNameHash(), hash);
+            ResourceManager::getInstance()->renameResource<T>(rawResource->getNameHash(), hash);
         });
         void* resourceVoid = reinterpret_cast<void*>(rawResource);
         addResourcePrivate(resourceVoid, T::typeHash, rawResource->getNameHash(), rawResource->getPath(), destroyer, saver);

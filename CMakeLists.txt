@@ -25,7 +25,7 @@ endif()
 target_compile_definitions(ResourceManagement PRIVATE RESOURCE_MANAGEMENT_EXPORTS)
 
 target_compile_options(ResourceManagement PRIVATE 
-    -ffunction-sections -fdata-sections -fno-exceptions -std=c++17
+    -ffunction-sections -fdata-sections -fno-exceptions -std=c++20
 )
 
 target_link_options(ResourceManagement PRIVATE
