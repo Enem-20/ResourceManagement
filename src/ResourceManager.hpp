@@ -10,6 +10,7 @@
 #define C_RESOURCE_MANAGER_HPP
 
 #include <functional>
+#include <iostream>
 
 #include "Resourceable.hpp"
 
@@ -41,8 +42,12 @@ public:
         T* corrected = reinterpret_cast<T*>(resource);
         ResourceManager::getInstance()->saveResourcePrivate(corrected->serialize(), corrected->getPath());
     }) {
-        void* resource = reinterpret_cast<void*>(rawResource);
-        addResourcePrivate(resource, T::typeHash, rawResource->getNameHash(), rawResource->getPath(), destroyer, saver);
+        rawResource->setNameRehashCallback([this, rawResource](uint64_t hash) -> void {
+            std::cout << "name rehash callback new hash: " << hash << "\n";
+            renameResourcePrivate(T::typeHash, rawResource->getNameHash(), hash);
+        });
+        void* resourceVoid = reinterpret_cast<void*>(rawResource);
+        addResourcePrivate(resourceVoid, T::typeHash, rawResource->getNameHash(), rawResource->getPath(), destroyer, saver);
     }
 #if __cpp_concepts >= 201907L
     template<is_resourceable T>
@@ -87,6 +92,17 @@ public:
         saveResourcePrivate(resource->serialize(), path);
     }
 
+#if __cpp_concepts >= 201907L
+    template<is_resourceable T>
+    void renameResource(uint64_t oldHash, uint64_t newHash) {
+        
+#else
+    template<class T>
+    void renameResource(uint64_t oldHash, uint64_t newHash) {
+        static_assert(is_resourceable_v<T>, "T must be a resourceable type");
+#endif
+        renameResourcePrivate(T::typeHash, oldHash, newHash);
+    }
     void unloadResources();
 
     void saveAllResources();
@@ -97,6 +113,7 @@ private:
     auto getResourcePrivate(uint64_t type, uint64_t name) -> void*;
     auto loadResourcePrivate(const std::string& path) -> std::vector<std::byte>;
     void saveResourcePrivate(const std::vector<std::byte>& serialized, const std::string& path);
+    void renameResourcePrivate(uint64_t typeHash, uint64_t oldHash, uint64_t newHash);
 };
 
 #endif // C_RESOURCE_MANAGER_HPP

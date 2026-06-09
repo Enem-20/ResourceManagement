@@ -151,6 +151,17 @@ public:
             }
         }
     }
+
+    void renameResource(uint64_t typeHash, uint64_t oldHash, uint64_t newHash) {
+        auto resourcesWithType = _resources.find(typeHash);
+        if(resourcesWithType != _resources.end()) {
+            auto resource = resourcesWithType.value().find(oldHash);
+            if(resource != resourcesWithType.value().end()) {
+                resourcesWithType.value()[newHash] = resource.value();
+                resourcesWithType.value().erase(resource);
+            }
+        }
+    }
 private:
     using InnerMap = tsl::hopscotch_map<uint64_t, Resource*>;
     using OuterMap = tsl::hopscotch_map<uint64_t, InnerMap>;
@@ -198,4 +209,8 @@ auto ResourceManager::loadResourcePrivate(const std::string& path) -> std::vecto
 }
 void ResourceManager::saveResourcePrivate(const std::vector<std::byte>& serialized, const std::string& path) {
     _impl->saveResource(serialized, path);
+}
+
+void ResourceManager::renameResourcePrivate(uint64_t typeHash, uint64_t oldHash, uint64_t newHash) {
+    _impl->renameResource(typeHash, oldHash, newHash);
 }
