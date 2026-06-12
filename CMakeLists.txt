@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(ResourceManagement)
 
-set(RESOURCE_MANAGEMENT_TESTS OFF)
+set(RESOURCE_MANAGEMENT_TESTS ON)
 
 include(CheckIPOSupported)
 check_ipo_supported(RESULT result OUTPUT output)

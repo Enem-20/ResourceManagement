@@ -11,7 +11,9 @@
 
 #include <functional>
 #include <iostream>
+#include <algorithm>
 
+#include "Resource.hpp"
 #include "Resourceable.hpp"
 #include "ResourceManagementEXPORT.hpp"
 
@@ -104,6 +106,28 @@ public:
 #endif
         renameResourcePrivate(T::typeHash, oldHash, newHash);
     }
+
+#if __cpp_concepts >= 201907L
+    template<is_resourceable T>
+    auto getTypedResources() -> std::unordered_map<uint64_t, T*> {
+#else
+    template<class T>
+    auto getTypedResources() -> std::unordered_map<uint64_t, T*> {
+        static_assert(is_resourceable_v<T>, "T must be a resourceable type");
+#endif
+        std::unordered_map<uint64_t, T*> result;
+        auto typedResources = getTypedResourcesPrivate(T::typeHash);
+        result.reserve(typedResources.size());
+        std::transform(
+            typedResources.begin(), typedResources.end(),
+            std::inserter(result, result.end()),
+            [](const auto& pair) -> std::pair<const uint64_t, T*> {
+                return {pair.first, reinterpret_cast<T*>(pair.second->getResource())};
+            }
+        );
+        return {};
+    }
+
     void unloadResources();
 
     void saveAllResources();
@@ -115,6 +139,7 @@ private:
     auto loadResourcePrivate(const std::string& path) -> std::vector<std::byte>;
     void saveResourcePrivate(const std::vector<std::byte>& serialized, const std::string& path);
     void renameResourcePrivate(uint64_t typeHash, uint64_t oldHash, uint64_t newHash);
+    auto getTypedResourcesPrivate(uint64_t typeHash) -> std::unordered_map<uint64_t, Resource*>;
 };
 
 #endif // C_RESOURCE_MANAGER_HPP

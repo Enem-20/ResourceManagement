@@ -33,6 +33,11 @@ auto main(int argc, const char** argv) -> int {
 
 	std::cout << "serialized: " << std::string_view(reinterpret_cast<const char*>(serialized.data()), serialized.size()) << '\n';
 
+	auto typedResources = resourceManager->getTypedResources<TestResourceObjectExtended>();
+	for(const auto& [name, resource] : typedResources) {
+		std::cout << "name: " << name << " resource: " << resource->getName() << '\n';
+	}
+
 	resourceManager->unloadResources();
 	return 0;
 }

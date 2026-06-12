@@ -162,6 +162,14 @@ public:
             }
         }
     }
+
+    auto getTypedResources(uint64_t typeHash) -> tsl::hopscotch_map<uint64_t, Resource*>* {
+        auto resourcesWithType = _resources.find(typeHash);
+        if(resourcesWithType != _resources.end()) {
+            return &resourcesWithType.value();
+        }
+        return nullptr;
+    }
 private:
     using InnerMap = tsl::hopscotch_map<uint64_t, Resource*>;
     using OuterMap = tsl::hopscotch_map<uint64_t, InnerMap>;
@@ -213,4 +221,13 @@ void ResourceManager::saveResourcePrivate(const std::vector<std::byte>& serializ
 
 void ResourceManager::renameResourcePrivate(uint64_t typeHash, uint64_t oldHash, uint64_t newHash) {
     _impl->renameResource(typeHash, oldHash, newHash);
+}
+
+auto ResourceManager::getTypedResourcesPrivate(uint64_t typeHash) -> std::unordered_map<uint64_t, Resource*> {
+    auto* resources = _impl->getTypedResources(typeHash);
+    if(resources != nullptr) {
+            std::unordered_map<uint64_t, Resource*> typedResourcesReturn(resources->begin(), resources->end());
+        return typedResourcesReturn;
+    }
+    return {};
 }
