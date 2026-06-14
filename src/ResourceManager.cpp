@@ -51,6 +51,17 @@ public:
         }
     }
 
+    void removeResource(uint64_t type, size_t precalculatedHashType, uint64_t name, size_t precalculatedHashName) {
+        auto resourcesWithType = _resources.find(type);
+        if(resourcesWithType != _resources.end()) {
+            auto resource = resourcesWithType.value().find(name, precalculatedHashName);
+            if(resource != resourcesWithType.value().end()) {
+                delete resource.value();
+                resourcesWithType.value().erase(resource);
+            }
+        }
+    }
+
     auto getResource(uint64_t type, uint64_t name) -> void* {
         auto resourcesWithType = _resources.find(type);
         if(resourcesWithType != _resources.end()) {
@@ -218,9 +229,15 @@ void ResourceManager::addResourcePrivate(void* resource, uint64_t type, uint64_t
     const std::function<void(void*)>& destroyer, const std::function<void(void*)>& saver) {
     _impl->addResource(resource, type, name, path, destroyer, saver);
 }
+
 void ResourceManager::removeResourcePrivate(uint64_t type, uint64_t name) {
     _impl->removeResource(type, name);
 }
+
+void ResourceManager::removeResourcePrivate(uint64_t type, size_t precalculatedHashType, uint64_t name, size_t precalculatedHashName) {
+    _impl->removeResource(type, precalculatedHashType, name, precalculatedHashName);
+}
+
 auto ResourceManager::getResourcePrivate(uint64_t type, uint64_t name) -> void* {
     return _impl->getResource(type, name);
 }

@@ -63,6 +63,30 @@ public:
 #endif
         removeResourcePrivate(T::typeHash, name);
     }
+
+#if __cpp_concepts >= 201907L
+    template<is_resourceable T>
+    void removeResource(uint64_t name, size_t precalculatedHashName) {
+#else
+    template<class T>
+    void removeResource(uint64_t name, size_t precalculatedHashName) {
+        static_assert(is_resourceable_v<T>, "T must be a resourceable type");
+#endif
+        removeResourcePrivate(T::typeHash, T::precalculatedHashType, name, precalculatedHashName);
+    }
+
+#if __cpp_concepts >= 201907L
+    template<is_resourceable T>
+    void removeResource(std::string_view name) {
+#else
+    template<class T>
+    void removeResource(std::string_view name) {
+        static_assert(is_resourceable_v<T>, "T must be a resourceable type");
+#endif
+        uint64_t hashedName = hash_string(name);
+        removeResourcePrivate(T::typeHash, T::precalculatedHashType, hashedName, std::hash<uint64_t>()(hashedName));
+    }
+
 #if __cpp_concepts >= 201907L
     template<is_resourceable T>
     auto getResource(uint64_t name) -> T* {
@@ -72,6 +96,18 @@ public:
         static_assert(is_resourceable_v<T>, "T must be a resourceable type");
 #endif
         return reinterpret_cast<T*>(getResourcePrivate(T::typeHash, name));
+    }
+
+#if __cpp_concepts >= 201907L
+    template<is_resourceable T>
+    auto getResource(std::string_view name) -> T* {
+#else
+    template<class T>
+    auto getResource(std::string_view name) -> T* {
+        static_assert(is_resourceable_v<T>, "T must be a resourceable type");
+#endif
+        uint64_t hashedName = hash_string(name);
+        return reinterpret_cast<T*>(getResourcePrivate(T::typeHash, T::precalculatedHashType, hashedName, std::hash<uint64_t>()(hashedName)));
     }
 
 #if __cpp_concepts >= 201907L && __cpp_lib_concepts >= 202002L
@@ -149,6 +185,7 @@ private:
     void addResourcePrivate(void* resource, uint64_t type, uint64_t name, const std::string& path,
         const std::function<void(void*)>& destroyer, const std::function<void(void*)>& saver);
     void removeResourcePrivate(uint64_t type, uint64_t name);
+    void removeResourcePrivate(uint64_t type, size_t precalculatedHashType, uint64_t name, size_t precalculatedHashName);
     auto getResourcePrivate(uint64_t type, uint64_t name) -> void*;
     auto getResourcePrivate(uint64_t type, size_t precalculatedHashType, uint64_t nameHash, size_t precalculatedHashName) -> void*;
     auto loadResourcePrivate(const std::string& path) -> std::vector<std::byte>;
