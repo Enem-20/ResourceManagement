@@ -13,6 +13,8 @@
 #include <iostream>
 #include <algorithm>
 
+#include <tsl/hopscotch_map.h>
+
 #include "Resource.hpp"
 #include "Resourceable.hpp"
 #include "ResourceManagementEXPORT.hpp"
@@ -45,9 +47,8 @@ public:
         T* corrected = reinterpret_cast<T*>(resource);
         ResourceManager::getInstance()->saveResource<T>(corrected, corrected->getPath());
     }) {
-        rawResource->setNameRehashCallback([this, rawResource](uint64_t hash) -> void {
-            std::cout << "name rehash callback new hash: " << hash << "\n";
-            ResourceManager::getInstance()->renameResource<T>(rawResource->getNameHash(), hash);
+        rawResource->setNameRehashCallback([this, rawResource](uint64_t oldHash) -> void {
+            ResourceManager::getInstance()->renameResource<T>(oldHash, rawResource->getNameHash());
         });
         void* resourceVoid = reinterpret_cast<void*>(rawResource);
         addResourcePrivate(resourceVoid, T::typeHash, rawResource->getNameHash(), rawResource->getPath(), destroyer, saver);
@@ -71,6 +72,17 @@ public:
         static_assert(is_resourceable_v<T>, "T must be a resourceable type");
 #endif
         return reinterpret_cast<T*>(getResourcePrivate(T::typeHash, name));
+    }
+
+#if __cpp_concepts >= 201907L && __cpp_lib_concepts >= 202002L
+    template<is_resourceable T>
+    auto getResource(uint64_t nameHash, size_t precalculatedHashName) {
+#else
+    template<class T>
+    auto getResource(uint64_t nameHash, size_t precalculatedHashName) {
+        static_assert(is_resourceable_v<T>, "T must be a resourceable type");
+#endif
+        return reinterpret_cast<T*>(getResourcePrivate(T::typeHash, T::precalculatedHashType, nameHash, precalculatedHashName));
     }
 
 #if __cpp_concepts >= 201907L
@@ -109,23 +121,25 @@ public:
 
 #if __cpp_concepts >= 201907L
     template<is_resourceable T>
-    auto getTypedResources() -> std::unordered_map<uint64_t, T*> {
+    auto getTypedResources() -> tsl::hopscotch_map<uint64_t, T*> {
 #else
     template<class T>
-    auto getTypedResources() -> std::unordered_map<uint64_t, T*> {
+    auto getTypedResources() -> tsl::hopscotch_map<uint64_t, T*> {
         static_assert(is_resourceable_v<T>, "T must be a resourceable type");
 #endif
-        std::unordered_map<uint64_t, T*> result;
-        auto typedResources = getTypedResourcesPrivate(T::typeHash);
-        result.reserve(typedResources.size());
-        std::transform(
-            typedResources.begin(), typedResources.end(),
-            std::inserter(result, result.end()),
-            [](const auto& pair) -> std::pair<const uint64_t, T*> {
-                return {pair.first, reinterpret_cast<T*>(pair.second->getResource())};
-            }
-        );
-        return {};
+        tsl::hopscotch_map<uint64_t, T*> result;
+        auto* typedResources = getTypedResourcesPrivate(T::typeHash);
+        if(typedResources != nullptr) {
+            result.reserve(typedResources->size());
+            std::transform(typedResources->begin(), typedResources->end(),
+                std::inserter(result, result.end()),
+                [](const auto& pair) -> std::pair<const uint64_t, T*> {
+                    return {pair.first, reinterpret_cast<T*>(pair.second->getResource())};
+                }
+            );
+        }
+
+        return result;
     }
 
     void unloadResources();
@@ -136,10 +150,11 @@ private:
         const std::function<void(void*)>& destroyer, const std::function<void(void*)>& saver);
     void removeResourcePrivate(uint64_t type, uint64_t name);
     auto getResourcePrivate(uint64_t type, uint64_t name) -> void*;
+    auto getResourcePrivate(uint64_t type, size_t precalculatedHashType, uint64_t nameHash, size_t precalculatedHashName) -> void*;
     auto loadResourcePrivate(const std::string& path) -> std::vector<std::byte>;
     void saveResourcePrivate(const std::vector<std::byte>& serialized, const std::string& path);
     void renameResourcePrivate(uint64_t typeHash, uint64_t oldHash, uint64_t newHash);
-    auto getTypedResourcesPrivate(uint64_t typeHash) -> std::unordered_map<uint64_t, Resource*>;
+    auto getTypedResourcesPrivate(uint64_t typeHash) -> tsl::hopscotch_map<uint64_t, Resource*>*;
 };
 
 #endif // C_RESOURCE_MANAGER_HPP

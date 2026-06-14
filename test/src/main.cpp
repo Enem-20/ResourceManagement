@@ -38,6 +38,10 @@ auto main(int argc, const char** argv) -> int {
 		std::cout << "name: " << name << " resource: " << resource->getName() << '\n';
 	}
 
+	auto preHash = std::hash<uint64_t>{}(hash_string(testObject->getName()));
+	TestResourceObjectExtended* testObjectByPrecalculatedHash = 
+	resourceManager->getResource<TestResourceObjectExtended>(testObject->getNameHash(), preHash);
+
 	resourceManager->unloadResources();
-	return 0;
+	return 0; 
 }

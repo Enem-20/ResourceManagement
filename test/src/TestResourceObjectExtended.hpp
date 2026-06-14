@@ -16,7 +16,7 @@ public:
 	~TestResourceObjectExtended();
 
 	static auto deserialize(const std::vector<std::byte>& serialized) -> TestResourceObjectExtended*;
-	auto serialize() const -> std::vector<std::byte>;
+	[[nodiscard]] auto serialize() const -> std::vector<std::byte>;
 };
 
 #endif

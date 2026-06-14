@@ -1,1 +1,1 @@
-{"base":{"name":"test","path":"testObject.json","test":"","nested":{"nestedTest":"nestedTest"}},"nestedExtended":{"nestedTestExtended":"nestedTestExtended"}}
+{"base":{"nameRehashCallback":"std::function<void(uint64_t)>","name":"test2","path":"testObject.json","precalculatedHashName":2271361535601096725,"test":"","nested":{"nestedTest":"nestedTest"}},"nestedExtended":{"nestedTestExtended":"nestedTestExtended"}}

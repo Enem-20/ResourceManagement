@@ -51,9 +51,9 @@ endif()
 
 target_sources(ResourceManagement PRIVATE ${HEADERS} ${SOURCES})
 
-target_include_directories(ResourceManagement PRIVATE ./external/hopscotch-map/include)
+#target_include_directories(ResourceManagement PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/external/hopscotch-map/include)
 
-target_include_directories(ResourceManagement PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(ResourceManagement PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/external/hopscotch-map/include)
 
 if(RESOURCE_MANAGEMENT_TESTS)
     add_subdirectory(test)

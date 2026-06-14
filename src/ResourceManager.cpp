@@ -62,6 +62,17 @@ public:
         return nullptr;
     }
 
+    auto getResource(uint64_t typeHash, size_t precalculatedHashType, uint64_t nameHash, size_t precalculatedHashName) -> void* {
+        auto resourcesWithType = _resources.find(typeHash, precalculatedHashType);
+        if(resourcesWithType != _resources.end()) {
+            auto resource = resourcesWithType.value().find(nameHash, precalculatedHashName);
+            if(resource != resourcesWithType.value().end()) {
+                return resource.value()->getResource();
+            }
+        }
+        return nullptr;
+    }
+
     auto getFileString(const std::string& path) -> std::string {
         std::string result;
         FILE* file = std::fopen(path.c_str(), "rb");
@@ -157,8 +168,9 @@ public:
         if(resourcesWithType != _resources.end()) {
             auto resource = resourcesWithType.value().find(oldHash);
             if(resource != resourcesWithType.value().end()) {
-                resourcesWithType.value()[newHash] = resource.value();
+                Resource* resourceRaw = resource.value();
                 resourcesWithType.value().erase(resource);
+                resourcesWithType.value()[newHash] = resourceRaw;
             }
         }
     }
@@ -212,6 +224,11 @@ void ResourceManager::removeResourcePrivate(uint64_t type, uint64_t name) {
 auto ResourceManager::getResourcePrivate(uint64_t type, uint64_t name) -> void* {
     return _impl->getResource(type, name);
 }
+
+auto ResourceManager::getResourcePrivate(uint64_t type, size_t precalculatedHashType, uint64_t nameHash, size_t precalculatedHashName) -> void* {
+    return _impl->getResource(type, precalculatedHashType, nameHash, precalculatedHashName);
+}
+
 auto ResourceManager::loadResourcePrivate(const std::string& path) -> std::vector<std::byte> {
     return _impl->loadResource(path);
 }
@@ -223,11 +240,6 @@ void ResourceManager::renameResourcePrivate(uint64_t typeHash, uint64_t oldHash,
     _impl->renameResource(typeHash, oldHash, newHash);
 }
 
-auto ResourceManager::getTypedResourcesPrivate(uint64_t typeHash) -> std::unordered_map<uint64_t, Resource*> {
-    auto* resources = _impl->getTypedResources(typeHash);
-    if(resources != nullptr) {
-            std::unordered_map<uint64_t, Resource*> typedResourcesReturn(resources->begin(), resources->end());
-        return typedResourcesReturn;
-    }
-    return {};
+auto ResourceManager::getTypedResourcesPrivate(uint64_t typeHash) -> tsl::hopscotch_map<uint64_t, Resource*>* {
+    return _impl->getTypedResources(typeHash);
 }
